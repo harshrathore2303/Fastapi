@@ -43,10 +43,11 @@ def delete_post(id: int, db: Session = Depends(get_db)):
     return {"data": "deleted"}
 
 @routers.put("/{id}", response_model=schemas.Post)
-def update_post(id: int, post: schemas.PostCreate, db: Session = Depends(get_db)):
-    updated_post = db.query(model.Post).filter(model.Post.id == id)
-    post = updated_post.first()
+def update_post(id: int, updated_post: schemas.PostCreate, db: Session = Depends(get_db)):
+    post_query = db.query(model.Post).filter(model.Post.id == id)
+    post = post_query.first()
     if (post == None):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"post with id: {id} does not exist")
-    updated_post.update({'title': 'updated title', 'content': 'updated content'}, synchronize_session=False)
+    post_query.update(updated_post.dict(), synchronize_session=False)
+    db.commit()
     return post
